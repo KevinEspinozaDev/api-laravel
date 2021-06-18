@@ -40,13 +40,13 @@ class UserController extends Controller
                 $user->save();
                 $data = [
                     'status' => 'success',
-                    'code' => 400,
+                    'code' => 202,
                     'message' => 'Usuario registrado exitosamente.'
                 ];
             }else{
                 // Don't register user
                 $data = [
-                    'status' => 'error',
+                    'status' => 'exist',
                     'code' => 400,
                     'message' => 'Usuario ya existente.'
                 ];
@@ -73,7 +73,7 @@ class UserController extends Controller
 
         $email = (!is_null($json) && isset($params->email)) ? $params->email : null;
         $password = (!is_null($json) && isset($params->password)) ? $params->password : null;
-        $getToken = (!is_null($json) && isset($params->gettoken)) ? $params->gettoken : null;
+        $getToken = (!is_null($json) && isset($params->getToken)) ? $params->getToken : null;
     
         // Cifrar password
         $secure_password = hash('sha256', $password);
