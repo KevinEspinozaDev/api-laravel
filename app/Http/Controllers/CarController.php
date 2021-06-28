@@ -37,7 +37,6 @@ class CarController extends Controller
             // Validation API
             
             $validate = \Validator::make($params_array, [
-                'title' => 'required | min:5',
                 'description' => 'required',
                 'price' => 'required',
                 'status' => 'required'
@@ -66,21 +65,30 @@ class CarController extends Controller
         }else{
             // Return error
             $data = [
-                'message' => 'Login incorrecto.',
+                'message' => 'No existe el auto.',
                 'status' => 'error',
                 'code' => 400
             ];
         }
 
-        return response()->json($data, 200);
+        return response()->json($data);
     }
 
     public function show($id){
-        $car = Car::find($id)->load('user');
-        return response()->json([
-            'car' => $car,
-            'status' => 'success'
-        ], 200);
+        $car = Car::find($id);
+
+        if (is_object($car)) {
+            $car = Car::find($id)->load('user');
+            return response()->json([
+                'car' => $car,
+                'status' => 'success'
+            ], 200);
+        }else{
+            return response()->json([
+                'message' => 'El auto no existe.',
+                'status' => 'error'
+            ], 400);
+        }
     }
 
     public function update($id, Request $request){
@@ -107,14 +115,23 @@ class CarController extends Controller
                 return response()->json($validate->errors(), 400);
             }
 
-            //Update car
+            /* Update car */
+            // Unset all keys that we don't want to change.
+            // If we don't unset, It will be some errors
+            unset($params_array['id']);
+            unset($params_array['user_id']);
+            unset($params_array['created_at']);
+            unset($params_array['updated_at']);
+            unset($params_array['user']);
+            /*date_default_timezone_set('America/Argentina/Buenos_Aires');
+            $fecha = date('Y-m-d H-i');
+            $params_array['updated_at'] = $fecha;*/
             $car = Car::where('id', $id)->update($params_array);
             $data = [
                 'car' => $params,
                 'status' => 'success',
                 'code' => 200
             ];
-
 
         }else{
             // Return error
@@ -124,6 +141,8 @@ class CarController extends Controller
                 'code' => 400
             ];
         }
+
+        return response()->json([$data], 200);
     }
 
     public function destroy($id, Request $request){
@@ -133,7 +152,7 @@ class CarController extends Controller
 
         if ($checkToken) {
             // Check if register exist
-            $car = new Car::find($id);
+            $car = Car::find($id);
 
             //Delete register
             $car->delete();
